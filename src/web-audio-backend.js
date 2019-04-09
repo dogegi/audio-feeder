@@ -7,6 +7,22 @@
 
 (function() {
 
+  function unlockAudioContext(audioCtx) {
+    if (audioCtx.state === 'suspended') {
+      var events = ['touchstart', 'touchend', 'mousedown', 'keydown'];
+      var unlock = function unlock() {
+        events.forEach(function (event) {
+          document.body.removeEventListener(event, unlock)
+        });
+        audioCtx.resume();
+      };
+  
+      events.forEach(function (event) {
+        document.body.addEventListener(event, unlock, false)
+      });
+    }
+  }
+
   var AudioContext = window.AudioContext || window.webkitAudioContext,
     BufferQueue = require('./buffer-queue.js'),
     nextTick = require('./next-tick-browser.js');
@@ -26,6 +42,7 @@
 
     this._context = context;
 
+    unlockAudioContext(this._context);
 
     /*
      * Optional audio node can be provided to connect the feeder to
